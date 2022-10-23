@@ -15,6 +15,12 @@ using namespace clang;
 void ProjectInfo::addNSArg(const FuncId &FID, int NSArg) {
   this->FuncIDNSArgs[FID].insert(NSArg);
 }
+
+void ProjectInfo::addErrorMessage(const std::string &FN,
+                                  unsigned int LineNo,
+                                  const std::string &Msg) {
+  this->ErrMessages[FN].insert(std::make_pair(LineNo, Msg));
+}
 void ProjectInfo::dumpFuncIDInfoToJson(llvm::raw_ostream &O) const {
   std::map<FuncId, FuncDeclKey> DeclFuncId, DefnFuncIds;
 

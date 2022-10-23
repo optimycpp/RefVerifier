@@ -31,8 +31,13 @@ public:
   // Write the parsed function info to json.
   void dumpFuncIDInfoToJson(llvm::raw_ostream &O) const;
 
+  void addErrorMessage(const std::string &FN, unsigned int LineNo,
+                       const std::string &Msg);
+
 private:
   std::map<FuncId, std::set<int>> FuncIDNSArgs;
+  std::map<std::string,
+           std::set<std::pair<unsigned int, std::string>>> ErrMessages;
 };
 
 #endif //LLVM_CLANG_REFVERIFIER_PROJECTINFO_H

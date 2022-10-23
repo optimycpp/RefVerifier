@@ -13,6 +13,7 @@
 #include "clang/RefVerifier/RefVerifier.h"
 #include "clang/RefVerifier/ProjectInfo.h"
 #include "clang/RefVerifier/RefVerifierASTConsumer.h"
+#include "clang/RefVerifier/RefDiagConsumer.h"
 #include "llvm/Support/TargetSelect.h"
 #include "clang/Frontend/ASTConsumers.h"
 #include "clang/Frontend/VerifyDiagnosticConsumer.h"
@@ -106,9 +107,39 @@ bool RefVerifierInterface::computeAllFuncInfo() {
     llvm_unreachable("No action");
   }
   return RetVal;
-
 }
 
 void RefVerifierInterface::dumpInfo(llvm::raw_ostream &O) {
   this->PInfo.dumpFuncIDInfoToJson(O);
+}
+
+bool RefVerifierInterface::checkCompilerErrors() {
+
+  bool RetVal = false;
+  auto *Tool = new ClangTool(*CurrCompDB, SourceFiles);
+  ACTION_ENUM ACTType = FUNC_INFO;
+  FuncId DummyId = 0;
+
+  std::unique_ptr<ToolAction> ConstraintTool = newFrontendActionFactoryA<
+      GenericAction<RefVerifierASTConsumer,
+                    ProjectInfo, struct RefVerifierOptions,
+                    ACTION_ENUM, FuncId>>(this->PInfo,
+                                          this->RVeriOptions,
+                                          ACTType,
+                                          DummyId);
+
+  if (ConstraintTool) {
+    RefDiagConsumer RDiag(this->PInfo);
+    Tool->setDiagnosticConsumer(&RDiag);
+    Tool->run(ConstraintTool.get());
+    RetVal = true;
+  } else {
+    llvm_unreachable("No action");
+  }
+  return RetVal;
+
+}
+
+void RefVerifierInterface::dumpCompileErrors(llvm::raw_ostream &O) {
+  // TODO:
 }

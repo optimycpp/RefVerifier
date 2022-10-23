@@ -10,6 +10,7 @@ add_clang_library(clangrefverifier
   PersistentSourceLoc.cpp
   ProjectInfo.cpp
   FuncInfoVisitor.cpp
+  RefDiagConsumer.cpp
   Utils.cpp
   LINK_LIBS
   clangAST

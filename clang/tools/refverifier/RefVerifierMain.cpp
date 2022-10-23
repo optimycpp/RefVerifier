@@ -41,12 +41,24 @@ static cl::opt<bool> DumpFuncInfo("dumpfinfo",
                                 cl::init(false),
                                   cl::cat(RefVerifierCategory));
 
+static cl::opt<bool> DumpCompilerErrors("dumperror",
+                                        cl::desc("Dump Compilation Errors"),
+                                        cl::init(false),
+                                        cl::cat(RefVerifierCategory));
+
 static cl::opt<std::string>
     OptFuncInfoJson("funcinfo",
                        cl::desc("Path to the file containing all the function "
                                 "info"),
                        cl::init("FuncInfo.json"),
                        cl::cat(RefVerifierCategory));
+
+static cl::opt<std::string>
+    OptCompilationErrJson("comperror",
+                    cl::desc("Path to the file where all "
+                                   "compilation errors should be stored."),
+                    cl::init("CompilationErrors.json"),
+                    cl::cat(RefVerifierCategory));
 
 
 int main(int argc, const char **argv) {
@@ -90,6 +102,7 @@ int main(int argc, const char **argv) {
                              &(OptionsParser.getCompilations()));
 
   if (DumpFuncInfo) {
+    // Dump Function Info
     if (RefVeriInf.computeAllFuncInfo()) {
       llvm::outs() << "[+] Successfully computed func info.\n";
     } else {
@@ -107,7 +120,25 @@ int main(int argc, const char **argv) {
       llvm::outs() << "[-] Error trying to open file:" << OptFuncInfoJson << ".\n";
       return -1;
     }
-    return 0;
+  } else if (DumpCompilerErrors) {
+    // Dump compilation errors.
+    if (RefVeriInf.checkCompilerErrors()) {
+      llvm::outs() << "[+] Successfully checked for compilation errors.\n";
+    } else {
+      llvm::outs() << "[-] Unable to get error info.\n";
+    }
+    llvm::outs() << "[+] Trying to write compilation error info to:"
+                 << OptCompilationErrJson << ".\n";
+    std::error_code Ec;
+    llvm::raw_fd_ostream OutputJson(OptCompilationErrJson, Ec);
+    if (!OutputJson.has_error()) {
+      RefVeriInf.dumpCompileErrors(OutputJson);
+      OutputJson.close();
+      llvm::outs() << "[+] Finished writing to given output file.\n";
+    } else {
+      llvm::outs() << "[-] Error trying to open file:" << OptCompilationErrJson << ".\n";
+      return -1;
+    }
   }
 
 

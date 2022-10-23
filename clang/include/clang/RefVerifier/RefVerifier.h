@@ -1,4 +1,4 @@
-//=--DetectERR.h--------------------------------------------------*- C++-*-===//
+//=--RefVerifier.h------------------------------------------------*- C++-*-===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -35,7 +35,11 @@ public:
 
   bool computeAllFuncInfo();
 
+  bool checkCompilerErrors();
+
   void dumpInfo(llvm::raw_ostream &O);
+
+  void dumpCompileErrors(llvm::raw_ostream &O);
 
 private:
   ProjectInfo PInfo;
