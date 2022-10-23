@@ -55,6 +55,8 @@ void ProjectInfo::dumpFuncIDInfoToJson(llvm::raw_ostream &O) const {
       O << ",\"FileName\":\"";
       O << FuncIdMap::getFuncDeclKeyFileName(DeclFuncId[NS.first]);
       O << "\"";
+      O << ",\"LineNum\":";
+      O << FuncIdMap::getFuncDeclKeyLineNum(DeclFuncId[NS.first]);
     }
     O << "},\"Defn\":{";
     if (DefnFuncIds.find(NS.first) != DefnFuncIds.end()) {
@@ -64,6 +66,8 @@ void ProjectInfo::dumpFuncIDInfoToJson(llvm::raw_ostream &O) const {
       O << ",\"FileName\":\"";
       O << FuncIdMap::getFuncDeclKeyFileName(DefnFuncIds[NS.first]);
       O << "\"";
+      O << ",\"LineNum\":";
+      O << FuncIdMap::getFuncDeclKeyLineNum(DefnFuncIds[NS.first]);
     }
     O << "}";
 

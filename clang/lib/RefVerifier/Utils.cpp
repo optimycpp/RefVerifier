@@ -13,12 +13,17 @@ std::map<FuncDeclKey, FuncId> FuncIdMap::FuncDKeyToId;
 FuncId FuncIdMap::NextFuncId = 1;
 
 FuncId FuncIdMap::getFuncID(const clang::FunctionDecl *FD, ASTContext *C) {
-  const std::string &FN = FD->getNameAsString();
+  std::string FN = FD->getNameAsString();
+  if (const auto *CMD = dyn_cast<CXXMethodDecl>(FD)) {
+    const auto *RDecl = CMD->getParent();
+    FN = RDecl->getNameAsString() + "::" + CMD->getNameAsString();
+  }
   bool IsSt = FD->isStatic();
   bool IsDecl = FD->isThisDeclarationADefinition();
   auto PSL = PersistentSourceLoc::mkPSL(FD, *C);
 
-  FuncDeclKey FDKey (std::make_tuple(FN, PSL.getFileName(), IsSt, IsDecl));
+  FuncDeclKey FDKey (std::make_tuple(FN, PSL.getFileName(), IsSt, IsDecl,
+                                    PSL.getLineNo()));
 
   if (FuncDKeyToId.find(FDKey) == FuncDKeyToId.end()) {
     FuncId PrevId;

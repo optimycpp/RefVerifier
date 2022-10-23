@@ -22,15 +22,13 @@ void RefVerifierASTConsumer::HandleTranslationUnit(ASTContext &C) {
 
   // Iterate through all function declarations.
   for (const auto &D : TUD->decls()) {
-    if (const FunctionDecl *FD = dyn_cast_or_null<FunctionDecl>(D)) {
-      if (A == FUNC_INFO) {
-        // Call function info visitor.
-        FuncInfoVisitor RNV(&C, Info);
-        if (Opts.Verbose) {
-          llvm::outs() << "[+] Running FuncInfo Visitor handler.\n";
-        }
-        RNV.TraverseDecl(const_cast<FunctionDecl *>(FD));
+    if (A == FUNC_INFO) {
+      // Call function info visitor.
+      FuncInfoVisitor RNV(&C, Info);
+      if (Opts.Verbose) {
+        llvm::outs() << "[+] Running FuncInfo Visitor handler.\n";
       }
+      RNV.TraverseDecl(D);
     }
   }
   return;
