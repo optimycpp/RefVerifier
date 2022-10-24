@@ -15,7 +15,7 @@
 #define LLVM_CLANG_REFVERIFIER_UTILS_H
 
 using namespace clang;
-typedef std::tuple<std::string, std::string, bool, bool, uint32_t> FuncDeclKey;
+typedef std::tuple<std::string, std::string, bool, bool, uint32_t, uint32_t> FuncDeclKey;
 typedef unsigned long FuncId;
 
 class FuncIdMap {
@@ -38,6 +38,10 @@ public:
 
   static uint32_t getFuncDeclKeyLineNum(const FuncDeclKey &K) {
     return std::get<4>(K);
+  }
+
+  static uint32_t getFuncDeclKeyEndLineNum(const FuncDeclKey &K) {
+    return std::get<5>(K);
   }
 
 private:

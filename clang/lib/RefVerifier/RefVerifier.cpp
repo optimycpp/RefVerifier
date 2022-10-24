@@ -141,5 +141,5 @@ bool RefVerifierInterface::checkCompilerErrors() {
 }
 
 void RefVerifierInterface::dumpCompileErrors(llvm::raw_ostream &O) {
-  // TODO:
+  this->PInfo.dumpErrorInfoToJson(O);
 }

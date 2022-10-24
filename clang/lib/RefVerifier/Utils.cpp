@@ -23,7 +23,7 @@ FuncId FuncIdMap::getFuncID(const clang::FunctionDecl *FD, ASTContext *C) {
   auto PSL = PersistentSourceLoc::mkPSL(FD, *C);
 
   FuncDeclKey FDKey (std::make_tuple(FN, PSL.getFileName(), IsSt, IsDecl,
-                                    PSL.getLineNo()));
+                                    PSL.getLineNo(), PSL.getEndLineNo()));
 
   if (FuncDKeyToId.find(FDKey) == FuncDKeyToId.end()) {
     FuncId PrevId;

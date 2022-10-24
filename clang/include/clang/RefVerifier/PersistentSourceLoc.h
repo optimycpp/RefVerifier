@@ -30,14 +30,15 @@ using namespace clang;
 
 class PersistentSourceLoc {
 protected:
-  PersistentSourceLoc(std::string F, uint32_t L, uint32_t C, uint32_t E)
-      : FileName(F), LineNo(L), ColNoS(C), ColNoE(E), IsValid(true) {}
+  PersistentSourceLoc(std::string F, uint32_t L, uint32_t EL, uint32_t C, uint32_t E)
+      : FileName(F), LineNo(L), EndLineNo(EL), ColNoS(C), ColNoE(E), IsValid(true) {}
 
 public:
   PersistentSourceLoc()
-      : FileName(""), LineNo(0), ColNoS(0), ColNoE(0), IsValid(false) {}
+      : FileName(""), LineNo(0), EndLineNo(0), ColNoS(0), ColNoE(0), IsValid(false) {}
   std::string getFileName() const { return FileName; }
   uint32_t getLineNo() const { return LineNo; }
+  uint32_t getEndLineNo() const { return EndLineNo; }
   uint32_t getColSNo() const { return ColNoS; }
   uint32_t getColENo() const { return ColNoE; }
   bool valid() const { return IsValid; }
@@ -60,12 +61,15 @@ public:
 
   std::string toString() const {
     return FileName + ":" + std::to_string(LineNo) + ":" +
-           std::to_string(ColNoS) + ":" + std::to_string(ColNoE);
+           std::to_string(ColNoS) +
+           ":" + std::to_string(EndLineNo) + ":" +
+           std::to_string(ColNoE);
   }
 
   std::string toJsonString() const {
     return "{\"File\":\"" + FileName + "\", \"LineNo\":" +
            std::to_string(LineNo) + ", \"ColNo\":" + std::to_string(ColNoS) +
+           ", \"EndLineNo\":" + std::to_string(EndLineNo) +
            "}";
   }
 
@@ -93,6 +97,8 @@ private:
   std::string FileName;
   // Starting line number.
   uint32_t LineNo;
+  // End line number
+  uint32_t EndLineNo;
   // Column number start.
   uint32_t ColNoS;
   // Column number end.

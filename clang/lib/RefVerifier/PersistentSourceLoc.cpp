@@ -44,10 +44,12 @@ PersistentSourceLoc PersistentSourceLoc::mkPSL(clang::SourceRange SR,
   assert(FESL.isValid());
   // Get End location, if exists.
   uint32_t EndCol = 0;
+  uint32_t EndLineNo = 0;
   if (SR.getEnd().isValid() && SM.getExpansionLoc(SR.getEnd()).isValid()) {
     FullSourceLoc EFESL = Context.getFullLoc(SM.getExpansionLoc(SR.getEnd()));
     if (EFESL.isValid()) {
       EndCol = EFESL.getExpansionColumnNumber();
+      EndLineNo = EFESL.getExpansionLineNumber();
     }
   }
   std::string Fn = PL.getFilename();
@@ -67,7 +69,7 @@ PersistentSourceLoc PersistentSourceLoc::mkPSL(clang::SourceRange SR,
     }
     Fn = std::string(sys::path::remove_leading_dotslash(FeAbsS));
   }
-  PersistentSourceLoc PSL(Fn, FESL.getExpansionLineNumber(),
+  PersistentSourceLoc PSL(Fn, FESL.getExpansionLineNumber(), EndLineNo,
                           FESL.getExpansionColumnNumber(), EndCol);
 
   return PSL;

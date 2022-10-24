@@ -34,6 +34,9 @@ public:
   void addErrorMessage(const std::string &FN, unsigned int LineNo,
                        const std::string &Msg);
 
+  // Write the error info to json.
+  void dumpErrorInfoToJson(llvm::raw_ostream &O) const;
+
 private:
   std::map<FuncId, std::set<int>> FuncIDNSArgs;
   std::map<std::string,

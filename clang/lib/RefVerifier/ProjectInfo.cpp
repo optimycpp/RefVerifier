@@ -63,6 +63,8 @@ void ProjectInfo::dumpFuncIDInfoToJson(llvm::raw_ostream &O) const {
       O << "\"";
       O << ",\"LineNum\":";
       O << FuncIdMap::getFuncDeclKeyLineNum(DeclFuncId[NS.first]);
+      O << ",\"EndLineNum\":";
+      O << FuncIdMap::getFuncDeclKeyEndLineNum(DeclFuncId[NS.first]);
     }
     O << "},\"Defn\":{";
     if (DefnFuncIds.find(NS.first) != DefnFuncIds.end()) {
@@ -74,6 +76,8 @@ void ProjectInfo::dumpFuncIDInfoToJson(llvm::raw_ostream &O) const {
       O << "\"";
       O << ",\"LineNum\":";
       O << FuncIdMap::getFuncDeclKeyLineNum(DefnFuncIds[NS.first]);
+      O << ",\"EndLineNum\":";
+      O << FuncIdMap::getFuncDeclKeyEndLineNum(DefnFuncIds[NS.first]);
     }
     O << "}";
 
@@ -81,4 +85,31 @@ void ProjectInfo::dumpFuncIDInfoToJson(llvm::raw_ostream &O) const {
     AddComma = true;
   }
   O << "]}";
+}
+
+void ProjectInfo::dumpErrorInfoToJson(llvm::raw_ostream &O) const {
+  O << "{\"ErrorInfo\":[";
+  bool AddComma = false;
+  for (auto &EI : this->ErrMessages) {
+    if (AddComma)
+      O << ",\n";
+    O << "{\"FileName\":\"";
+    O << EI.first << "\", \"Errs\":[";
+
+    bool AddComma1 = false;
+    for (auto &ES : EI.second) {
+      if (AddComma1)
+        O << ",";
+      O << "{\"LineNo\":";
+      O << ES.first;
+      O << ", \"Message\":\"";
+      O << ES.second;
+      O << "\"}";
+      AddComma1 = true;
+    }
+    O << "]}";
+    AddComma = true;
+  }
+  O << "]}";
+
 }
