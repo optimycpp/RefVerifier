@@ -9,8 +9,10 @@
 //===----------------------------------------------------------------------===//
 
 #include "clang/RefVerifier/ProjectInfo.h"
+#include "json.hpp"
 
 using namespace clang;
+using json = nlohmann::json;
 
 void ProjectInfo::addNSArg(const FuncId &FID, int NSArg) {
   this->FuncIDNSArgs[FID].insert(NSArg);
@@ -20,6 +22,13 @@ void ProjectInfo::addErrorMessage(const std::string &FN,
                                   unsigned int LineNo,
                                   const std::string &Msg) {
   this->ErrMessages[FN].insert(std::make_pair(LineNo, Msg));
+}
+
+void updateJsonObj(json &JObj, const FuncDeclKey &FD) {
+  JObj["Name"] = FuncIdMap::getFuncDeclKeyFuncName(FD);
+  JObj["FileName"] = FuncIdMap::getFuncDeclKeyFileName(FD);
+  JObj["LineNum"] = FuncIdMap::getFuncDeclKeyLineNum(FD);
+  JObj["EndLineNum"] = FuncIdMap::getFuncDeclKeyEndLineNum(FD);
 }
 void ProjectInfo::dumpFuncIDInfoToJson(llvm::raw_ostream &O) const {
   std::map<FuncId, FuncDeclKey> DeclFuncId, DefnFuncIds;
@@ -34,57 +43,26 @@ void ProjectInfo::dumpFuncIDInfoToJson(llvm::raw_ostream &O) const {
     (*TMap)[M.second] = M.first;
   }
 
-  O << "{\"FuncInfo\":[\n";
+  json Mobj;
+
+  std::vector<json> FuncObjs;
 
   // Now dump the information for all the interesting functions.
   bool AddComma = false;
   for (auto &NS: this->FuncIDNSArgs) {
-    if (AddComma) {
-      O << ",\n";
-    }
-    O << "{\"ID\":" << NS.first;
-    O << ",\"TargetParms\":[";
-    bool AddComma1 = false;
-    for (auto ID: NS.second) {
-      if (AddComma1) {
-        O << ",";
-      }
-      O << ID;
-      AddComma1 = true;
-    }
-    O << "]";
-    O << ",\"Decl\":{";
+    json FObj;
+    FObj["ID"] = NS.first;
+    FObj["TargetParms"] = NS.second;
     if (DeclFuncId.find(NS.first) != DeclFuncId.end()) {
-      O << "\"Name\":\"";
-      O << FuncIdMap::getFuncDeclKeyFuncName(DeclFuncId[NS.first]);
-      O << "\"";
-      O << ",\"FileName\":\"";
-      O << FuncIdMap::getFuncDeclKeyFileName(DeclFuncId[NS.first]);
-      O << "\"";
-      O << ",\"LineNum\":";
-      O << FuncIdMap::getFuncDeclKeyLineNum(DeclFuncId[NS.first]);
-      O << ",\"EndLineNum\":";
-      O << FuncIdMap::getFuncDeclKeyEndLineNum(DeclFuncId[NS.first]);
+      updateJsonObj(FObj["Decl"], DeclFuncId[NS.first]);
     }
-    O << "},\"Defn\":{";
     if (DefnFuncIds.find(NS.first) != DefnFuncIds.end()) {
-      O << "\"Name\":\"";
-      O << FuncIdMap::getFuncDeclKeyFuncName(DefnFuncIds[NS.first]);
-      O << "\"";
-      O << ",\"FileName\":\"";
-      O << FuncIdMap::getFuncDeclKeyFileName(DefnFuncIds[NS.first]);
-      O << "\"";
-      O << ",\"LineNum\":";
-      O << FuncIdMap::getFuncDeclKeyLineNum(DefnFuncIds[NS.first]);
-      O << ",\"EndLineNum\":";
-      O << FuncIdMap::getFuncDeclKeyEndLineNum(DefnFuncIds[NS.first]);
+      updateJsonObj(FObj["Defn"], DefnFuncIds[NS.first]);
     }
-    O << "}";
-
-    O<< "}";
-    AddComma = true;
+    FuncObjs.push_back(FObj);
   }
-  O << "]}";
+  Mobj["FuncInfo"] = FuncObjs;
+  O << Mobj.dump(4);
 }
 
 void ProjectInfo::dumpErrorInfoToJson(llvm::raw_ostream &O) const {
