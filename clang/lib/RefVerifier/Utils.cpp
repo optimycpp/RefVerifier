@@ -51,7 +51,7 @@ FuncDeclKey::FuncDeclKey (const FunctionDecl *FD, ASTContext *C) {
   this->IsDefinition = FD->isThisDeclarationADefinition();
 }
 
-bool FuncDeclKey::IsSameFunctionDeclOrDefn(const FuncDeclKey &O) const {
+bool FuncDeclKey::isSameFunctionDeclOrDefn(const FuncDeclKey &O) const {
   return this->FuncName == O.FuncName &&
          this->IsStatic == O.IsStatic &&
          this->IsVirtual == O.IsVirtual &&

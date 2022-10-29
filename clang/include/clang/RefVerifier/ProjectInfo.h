@@ -31,6 +31,8 @@ public:
   // Write the parsed function info to json.
   void dumpFuncIDInfoToJson(llvm::raw_ostream &O) const;
 
+  bool parseFuncIDInfoJson(const std::string &JsonFP);
+
   void addErrorMessage(const std::string &FN, unsigned int LineNo,
                        const std::string &Msg);
 

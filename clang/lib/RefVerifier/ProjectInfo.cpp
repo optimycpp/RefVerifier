@@ -10,6 +10,7 @@
 
 #include "clang/RefVerifier/ProjectInfo.h"
 #include "clang/RefVerifier/json.hpp"
+#include <fstream>
 
 using namespace clang;
 using json = nlohmann::json;
@@ -22,6 +23,27 @@ void ProjectInfo::addErrorMessage(const std::string &FN,
                                   unsigned int LineNo,
                                   const std::string &Msg) {
   this->ErrMessages[FN].insert(std::make_pair(LineNo, Msg));
+}
+
+bool ProjectInfo::parseFuncIDInfoJson(const std::string &JsonFP) {
+  std::ifstream FStream(JsonFP);
+  if (FStream) {
+    json Obj = json::parse(FStream);
+    if (Obj.contains("FuncInfo")) {
+      for (const auto &FObj : Obj["FuncInfo"]) {
+        const FuncId &FID = FObj["ID"];
+        if (FObj.contains("Decl")) {
+          FuncIdMap::addFuncDecl(FObj["Decl"], FID);
+        }
+        if (FObj.contains("Defn")) {
+          FuncIdMap::addFuncDecl(FObj["Defn"], FID);
+        }
+      }
+    }
+    return true;
+
+  }
+  return false;
 }
 
 void ProjectInfo::dumpFuncIDInfoToJson(llvm::raw_ostream &O) const {

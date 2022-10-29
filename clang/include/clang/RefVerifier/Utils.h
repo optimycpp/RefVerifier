@@ -16,7 +16,6 @@
 #define LLVM_CLANG_REFVERIFIER_UTILS_H
 
 using namespace clang;
-//typedef std::tuple<std::string, std::string, bool, bool, uint32_t, uint32_t> FuncDeclKey;
 typedef unsigned long FuncId;
 
 class FuncDeclKey {
@@ -38,7 +37,7 @@ public:
 
   virtual ~FuncDeclKey() { }
 
-  bool IsSameFunctionDeclOrDefn(const FuncDeclKey &O) const;
+  bool isSameFunctionDeclOrDefn(const FuncDeclKey &O) const;
 
   bool operator<(const FuncDeclKey &O) const {
     if (FuncName == O.FuncName)
@@ -86,6 +85,10 @@ public:
 
   static const std::map<FuncDeclKey, FuncId>& getFuncDKeyToId() {
     return FuncIdMap::FuncDKeyToId;
+  }
+
+  static void addFuncDecl(const FuncDeclKey &FD, const FuncId &ID) {
+    FuncDKeyToId[FD] = ID;
   }
 
 private:
