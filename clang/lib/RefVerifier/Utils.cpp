@@ -80,7 +80,7 @@ FuncId FuncIdMap::getFuncID(const clang::FunctionDecl *FD, ASTContext *C) {
 bool FuncIdMap::getExistingFuncId(const FuncDeclKey &Curr,
                                   FuncId &Existing) {
   for (const auto &MapElem: FuncIdMap::FuncDKeyToId) {
-    if (MapElem.first.IsSameFunctionDeclOrDefn(Curr)) {
+    if (MapElem.first.isSameFunctionDeclOrDefn(Curr)) {
       Existing = MapElem.second;
       return true;
     }
