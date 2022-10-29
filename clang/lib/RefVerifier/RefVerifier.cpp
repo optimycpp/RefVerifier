@@ -140,6 +140,17 @@ bool RefVerifierInterface::checkCompilerErrors() {
 
 }
 
+bool RefVerifierInterface::rewriteFuncParam(const std::string &FInfoJson,
+                                            uint32_t FuncId,
+                                            uint32_t ParamID) {
+  if (PInfo.parseFuncIDInfoJson(FInfoJson)) {
+    // TODO: Complete this.
+    return true;
+  }
+  return false;
+
+}
+
 void RefVerifierInterface::dumpCompileErrors(llvm::raw_ostream &O) {
   this->PInfo.dumpErrorInfoToJson(O);
 }

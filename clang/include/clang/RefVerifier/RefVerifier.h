@@ -37,6 +37,10 @@ public:
 
   bool checkCompilerErrors();
 
+  bool rewriteFuncParam(const std::string &FInfoJson,
+                        uint32_t FuncId,
+                        uint32_t ParamID);
+
   void dumpInfo(llvm::raw_ostream &O);
 
   void dumpCompileErrors(llvm::raw_ostream &O);

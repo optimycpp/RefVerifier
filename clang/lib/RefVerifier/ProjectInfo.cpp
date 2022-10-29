@@ -27,6 +27,7 @@ void ProjectInfo::addErrorMessage(const std::string &FN,
 
 bool ProjectInfo::parseFuncIDInfoJson(const std::string &JsonFP) {
   std::ifstream FStream(JsonFP);
+  bool RVal = false;
   if (FStream) {
     json Obj = json::parse(FStream);
     if (Obj.contains("FuncInfo")) {
@@ -40,10 +41,11 @@ bool ProjectInfo::parseFuncIDInfoJson(const std::string &JsonFP) {
         }
       }
     }
-    return true;
-
+    RVal = true;
+  } else {
+    llvm::outs() << "[-] Failed to parse provided json:" << JsonFP << "\n";
   }
-  return false;
+  return RVal;
 }
 
 void ProjectInfo::dumpFuncIDInfoToJson(llvm::raw_ostream &O) const {
@@ -81,28 +83,22 @@ void ProjectInfo::dumpFuncIDInfoToJson(llvm::raw_ostream &O) const {
 }
 
 void ProjectInfo::dumpErrorInfoToJson(llvm::raw_ostream &O) const {
-  O << "{\"ErrorInfo\":[";
-  bool AddComma = false;
+  json Eobj;
+  std::vector<json> EMsgs;
   for (auto &EI : this->ErrMessages) {
-    if (AddComma)
-      O << ",\n";
-    O << "{\"FileName\":\"";
-    O << EI.first << "\", \"Errs\":[";
-
-    bool AddComma1 = false;
+    json FileMsgs;
+    FileMsgs["FileName"] = EI.first;
+    std::vector<json> Msgs;
+    Msgs.clear();
     for (auto &ES : EI.second) {
-      if (AddComma1)
-        O << ",";
-      O << "{\"LineNo\":";
-      O << ES.first;
-      O << ", \"Message\":\"";
-      O << ES.second;
-      O << "\"}";
-      AddComma1 = true;
+      json Msg;
+      Msg["LineNo"] = ES.first;
+      Msg["Message"] = ES.second;
+      Msgs.push_back(Msg);
     }
-    O << "]}";
-    AddComma = true;
+    FileMsgs["Errs"] = Msgs;
+    EMsgs.push_back(FileMsgs);
   }
-  O << "]}";
-
+  Eobj["ErrorInfo"] = EMsgs;
+  O << Eobj.dump(4);
 }
