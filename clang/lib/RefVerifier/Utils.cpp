@@ -12,23 +12,62 @@ std::map<FuncDeclKey, FuncId> FuncIdMap::FuncDKeyToId;
 // Initialize next function Id.
 FuncId FuncIdMap::NextFuncId = 1;
 
-FuncId FuncIdMap::getFuncID(const clang::FunctionDecl *FD, ASTContext *C) {
-  std::string FN = FD->getNameAsString();
+FuncDeclKey::FuncDeclKey (const FunctionDecl *FD, ASTContext *C) {
+  this->FuncName = FD->getNameAsString();
   if (const auto *CMD = dyn_cast<CXXMethodDecl>(FD)) {
-    const auto *RDecl = CMD->getParent();
-    FN = RDecl->getNameAsString() + "::" + CMD->getNameAsString();
+    this->IsClassMethod = true;
+    this->IsVirtual = CMD->isVirtual();
+    auto *ParentDecl = CMD->getParent();
+    this->ParentClass = ParentDecl->getNameAsString();
+    this->BaseClass = "";
+    if (ParentDecl->isClass()) {
+      std::vector<const CXXRecordDecl*> TargetBases;
+      TargetBases.clear();
+      ParentDecl->forallBases([&TargetBases, CMD](const CXXRecordDecl *RD) {
+        auto *BaseFn = CMD->getCorrespondingMethodDeclaredInClass(RD, true);
+        if (BaseFn) {
+          // we found it
+          TargetBases.push_back(RD);
+          // we can stop.
+          return false;
+        }
+        return true;
+      });
+      if (!TargetBases.empty()) {
+        this->BaseClass = (TargetBases.front())->getNameAsString();
+      }
+    }
+  } else {
+    this->IsClassMethod = false;
+    this->ParentClass = "";
+    this->BaseClass = "";
+    this->IsVirtual = false;
   }
-  bool IsSt = FD->isStatic();
-  bool IsDecl = FD->isThisDeclarationADefinition();
   auto PSL = PersistentSourceLoc::mkPSL(FD, *C);
+  this->FileName = PSL.getFileName();
+  this->StartLineNo = PSL.getLineNo();
+  this->EndLineNo = PSL.getEndLineNo();
+  this->IsStatic = FD->isStatic();
+  this->IsDefinition = FD->isThisDeclarationADefinition();
+}
 
-  FuncDeclKey FDKey (std::make_tuple(FN, PSL.getFileName(), IsSt, IsDecl,
-                                    PSL.getLineNo(), PSL.getEndLineNo()));
+bool FuncDeclKey::IsSameFunctionDeclOrDefn(const FuncDeclKey &O) const {
+  return this->FuncName == O.FuncName &&
+         this->IsStatic == O.IsStatic &&
+         this->IsVirtual == O.IsVirtual &&
+         this->IsClassMethod == O.IsClassMethod &&
+         this->ParentClass == O.ParentClass &&
+         this->IsDefinition == !O.IsDefinition;
+}
+
+FuncId FuncIdMap::getFuncID(const clang::FunctionDecl *FD, ASTContext *C) {
+
+  FuncDeclKey FDKey (FD, C);
 
   if (FuncDKeyToId.find(FDKey) == FuncDKeyToId.end()) {
     FuncId PrevId;
     // Check if we found this function (declaration or definition before).
-    if (FuncIdMap::getExistingFuncId(FN, IsSt, !IsDecl, PrevId)) {
+    if (FuncIdMap::getExistingFuncId(FDKey, PrevId)) {
       FuncDKeyToId[FDKey] = PrevId;
     } else {
       FuncDKeyToId[FDKey] = FuncIdMap::NextFuncId++;
@@ -38,15 +77,11 @@ FuncId FuncIdMap::getFuncID(const clang::FunctionDecl *FD, ASTContext *C) {
 
 }
 
-bool FuncIdMap::getExistingFuncId(const std::string &FuncN,
-                                  bool IsStatic, bool IsDecl,
-                                  FuncId &CurrId) {
+bool FuncIdMap::getExistingFuncId(const FuncDeclKey &Curr,
+                                  FuncId &Existing) {
   for (const auto &MapElem: FuncIdMap::FuncDKeyToId) {
-    const auto &FDeck = MapElem.first;
-    if (std::get<0>(FDeck) == FuncN &&
-        std::get<2>(FDeck) == IsStatic &&
-        std::get<3>(FDeck) == IsDecl) {
-      CurrId = MapElem.second;
+    if (MapElem.first.IsSameFunctionDeclOrDefn(Curr)) {
+      Existing = MapElem.second;
       return true;
     }
   }

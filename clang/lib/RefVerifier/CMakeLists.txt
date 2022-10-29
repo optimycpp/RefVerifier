@@ -12,7 +12,6 @@ add_clang_library(clangrefverifier
   FuncInfoVisitor.cpp
   RefDiagConsumer.cpp
   Utils.cpp
-  json.hpp
   LINK_LIBS
   clangAST
   clangAnalysis

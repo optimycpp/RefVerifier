@@ -9,7 +9,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "clang/RefVerifier/ProjectInfo.h"
-#include "json.hpp"
+#include "clang/RefVerifier/json.hpp"
 
 using namespace clang;
 using json = nlohmann::json;
@@ -24,12 +24,6 @@ void ProjectInfo::addErrorMessage(const std::string &FN,
   this->ErrMessages[FN].insert(std::make_pair(LineNo, Msg));
 }
 
-void updateJsonObj(json &JObj, const FuncDeclKey &FD) {
-  JObj["Name"] = FuncIdMap::getFuncDeclKeyFuncName(FD);
-  JObj["FileName"] = FuncIdMap::getFuncDeclKeyFileName(FD);
-  JObj["LineNum"] = FuncIdMap::getFuncDeclKeyLineNum(FD);
-  JObj["EndLineNum"] = FuncIdMap::getFuncDeclKeyEndLineNum(FD);
-}
 void ProjectInfo::dumpFuncIDInfoToJson(llvm::raw_ostream &O) const {
   std::map<FuncId, FuncDeclKey> DeclFuncId, DefnFuncIds;
 
@@ -37,7 +31,7 @@ void ProjectInfo::dumpFuncIDInfoToJson(llvm::raw_ostream &O) const {
   for (auto const &M: FuncIdMap::getFuncDKeyToId()) {
     // This is definition.
     std::map<FuncId, FuncDeclKey> *TMap = &DeclFuncId;
-    if (FuncIdMap::getFuncDeclKeyDecl(M.first)) {
+    if (M.first.IsDefinition) {
       TMap = &DefnFuncIds;
     }
     (*TMap)[M.second] = M.first;
@@ -48,16 +42,15 @@ void ProjectInfo::dumpFuncIDInfoToJson(llvm::raw_ostream &O) const {
   std::vector<json> FuncObjs;
 
   // Now dump the information for all the interesting functions.
-  bool AddComma = false;
   for (auto &NS: this->FuncIDNSArgs) {
     json FObj;
     FObj["ID"] = NS.first;
     FObj["TargetParms"] = NS.second;
     if (DeclFuncId.find(NS.first) != DeclFuncId.end()) {
-      updateJsonObj(FObj["Decl"], DeclFuncId[NS.first]);
+      FObj["Decl"] = DeclFuncId[NS.first];
     }
     if (DefnFuncIds.find(NS.first) != DefnFuncIds.end()) {
-      updateJsonObj(FObj["Defn"], DefnFuncIds[NS.first]);
+      FObj["Defn"] = DefnFuncIds[NS.first];
     }
     FuncObjs.push_back(FObj);
   }
