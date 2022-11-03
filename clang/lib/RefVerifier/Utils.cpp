@@ -12,6 +12,15 @@ std::map<FuncDeclKey, FuncId> FuncIdMap::FuncDKeyToId;
 // Initialize next function Id.
 FuncId FuncIdMap::NextFuncId = 1;
 
+ParamRewriteKey::ParamRewriteKey (const ParmVarDecl *PVD) {
+  auto PSL = PersistentSourceLoc::mkTokenPSL(PVD, PVD->getASTContext());
+  this->FileName = PSL.getFileName();
+  this->TypeIndexLine = PSL.getLineNo();
+  this->TypeIndexColumn = PSL.getColSNo();
+  this->ParamIndexLine = PSL.getEndLineNo();
+  this->ParamIndexColumn = PSL.getColENo();
+}
+
 FuncDeclKey::FuncDeclKey (const FunctionDecl *FD, ASTContext *C) {
   this->FuncName = FD->getNameAsString();
   if (const auto *CMD = dyn_cast<CXXMethodDecl>(FD)) {

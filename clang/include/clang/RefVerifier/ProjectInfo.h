@@ -40,9 +40,7 @@ public:
   void dumpErrorInfoToJson(llvm::raw_ostream &O) const;
 
 private:
-  std::map<FuncId,
-           std::set<std::tuple<std::string, unsigned int, unsigned int,
-                      unsigned int, unsigned int>>> FuncIDNSArgs;
+  std::map<FuncId, std::map<uint32_t, std::set<ParamRewriteKey>>> FuncIDNSArgs;
   std::map<std::string,
            std::set<std::pair<unsigned int, std::string>>> ErrMessages;
 };

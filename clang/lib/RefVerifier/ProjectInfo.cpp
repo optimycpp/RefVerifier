@@ -17,12 +17,8 @@ using json = nlohmann::json;
 
 void ProjectInfo::addNSArg(const FuncId &FID, int NSArg,
                            const ParmVarDecl *PVD) {
-  // std::string, unsigned int, unsigned int
-  auto PSL = PersistentSourceLoc::mkTokenPSL(PVD, PVD->getASTContext());
-  auto PLoc = std::make_tuple(PSL.getFileName(), PSL.getLineNo(),
-                              PSL.getColSNo(), PSL.getEndLineNo(),
-                              PSL.getColENo());
-  this->FuncIDNSArgs[FID].insert(PLoc);
+  ParamRewriteKey PKey(PVD);
+  this->FuncIDNSArgs[FID][NSArg].insert(PKey);
 }
 
 void ProjectInfo::addErrorMessage(const std::string &FN,

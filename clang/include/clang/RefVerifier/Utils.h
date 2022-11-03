@@ -18,6 +18,46 @@
 using namespace clang;
 typedef unsigned long FuncId;
 
+class ParamRewriteKey {
+public:
+  std::string FileName;
+  uint32_t TypeIndexLine;
+  uint32_t TypeIndexColumn;
+  uint32_t ParamIndexLine;
+  uint32_t ParamIndexColumn;
+
+  ParamRewriteKey (const ParmVarDecl *PVD);
+
+  virtual ~ParamRewriteKey() {
+    //Nothing to do
+  }
+
+  bool operator<(const ParamRewriteKey &O) const {
+    if (FileName == O.FileName)
+      if (TypeIndexLine == O.TypeIndexLine)
+        if (TypeIndexColumn == O.TypeIndexColumn)
+          if (ParamIndexLine == O.ParamIndexLine)
+            if (ParamIndexColumn == O.ParamIndexColumn)
+              return false;
+            else
+              return ParamIndexColumn < O.ParamIndexColumn;
+          else
+            return ParamIndexLine < O.ParamIndexLine;
+        else
+          return TypeIndexColumn < O.TypeIndexColumn;
+      else
+        return TypeIndexLine < O.TypeIndexLine;
+    else
+      return FileName < O.FileName;
+  }
+
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(ParamRewriteKey, FileName,
+                                 TypeIndexLine, TypeIndexColumn,
+                                 ParamIndexLine,
+                                 ParamIndexColumn)
+
+};
+
 class FuncDeclKey {
 public:
   std::string FuncName;
