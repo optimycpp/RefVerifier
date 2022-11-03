@@ -1,9 +1,24 @@
-
 # `refverifier`: Gets all non-scalar parameters and checks for compilation errors.
+
+## Building
+```
+git clone https://github.com/optimycpp/RefVerifier.git
+cd RefVerifier
+mkdir build && cd build
+cmake ../llvm -G Ninja -DLLVM_ENABLE_PROJECTS="clang" -DLLVM_TARGETS_TO_BUILD=X86 -DLLVM_USE_SPLIT_DWARF=ON -DLLVM_OPTIMIZED_TABLEGEN=ON
+ninja clang refverifier
+```
+The above command will build the tools in `build/bin` folder.
+
+## Using pre-built docker image
+
+Refer [docker_image](./docker_image) folder for details on using pre-built docker image.
+
+## Using the tool
 
 The `refverifier` tool has 2 functions, (1) To dump function info (i.e., functions with non-reference non-scalar parameters); (2) To check for compilation errors.
 
-## Help
+### Help
 Getting help.
 ```
 refverifier --help 
@@ -52,7 +67,7 @@ refverifier options:
 
 ```
 
-## Dumping Function Info
+### Dumping Function Info
 
 You can use the tool as regular compiler with the options.
 
@@ -122,7 +137,7 @@ A snippet of it is as shown below:
 ...
 ```
 
-## Dumping Compilation Error
+### Dumping Compilation Error
 ```
 ./refverifier -dumperror <..source files>
 ```
