@@ -71,7 +71,11 @@ void ProjectInfo::dumpFuncIDInfoToJson(llvm::raw_ostream &O) const {
   for (auto &NS: this->FuncIDNSArgs) {
     json FObj;
     FObj["ID"] = NS.first;
-    FObj["NonConstNonScalarParams"] = NS.second;
+    json PObj;
+    for (const auto &E : NS.second) {
+      PObj[std::to_string(E.first)] = E.second;
+    }
+    FObj["NonConstNonScalarParams"] = PObj;
     if (DeclFuncId.find(NS.first) != DeclFuncId.end()) {
       FObj["Decl"] = DeclFuncId[NS.first];
     }
