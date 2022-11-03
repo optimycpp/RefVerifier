@@ -1,22 +1,137 @@
-# `detecterr`: Automatically detect error handling conditional statements.
 
-The `detecterr` tool will detect error guarding statements.
+# `refverifier`: Gets all non-scalar parameters and checks for compilation errors.
 
-## Running the tool
+The `refverifier` tool has 2 functions, (1) To dump function info (i.e., functions with non-reference non-scalar parameters); (2) To check for compilation errors.
+
+## Help
+Getting help.
+```
+refverifier --help 
+
+OVERVIEW: refverifier: Rewrite/verify const references.
+
+USAGE: refverifier [options] <source0> [... <sourceN>]
+
+OPTIONS:
+
+Generic Options:
+
+  --help                      - Display available options (--help-hidden for more)
+  --help-list                 - Display list of available options (--help-list-hidden for more)
+  --version                   - Display the version of this program
+
+refverifier options:
+
+  --comperror=<string>        - Path to the file where all compilation errors should be stored.
+  --dumperror                 - Dump Compilation Errors
+  --dumpfinfo                 - Dump Function Info
+  --extra-arg=<string>        - Additional argument to append to the compiler command line
+  --extra-arg-before=<string> - Additional argument to prepend to the compiler command line
+  --funcinfo=<string>         - Path to the file containing all the function info
+  -p=<string>                 - Build path
+  --verbose                   - Print verbose information
+
+-p <build-path> is used to read a compile command database.
+
+	For example, it can be a CMake build directory in which a file named
+	compile_commands.json exists (use -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+	CMake option to get this output). When no build path is specified,
+	a search for compile_commands.json will be attempted through all
+	parent paths of the first input file . See:
+	https://clang.llvm.org/docs/HowToSetupToolingForLLVM.html for an
+	example of setting up Clang Tooling on a source tree.
+
+<source0> ... specify the paths of source files. These paths are
+	looked up in the compile command database. If the path of a file is
+	absolute, it needs to point into CMake's source tree. If the path is
+	relative, the current working directory needs to be in the CMake
+	source tree and the file must be in a subdirectory of the current
+	working directory. "./" prefixes in the relative files will be
+	automatically removed, but the rest of a relative path must be a
+	suffix of a path in the compile command database.
 
 ```
-detecterr --output=errblocks.json <repo_path>/clang/tools/detecterr/utils/tests/retnull.c 
-```
-The above command will produce `errblocks.json` which has the following contents:
+
+## Dumping Function Info
+
+You can use the tool as regular compiler with the options.
 
 ```
-{"ErrGuardingConditions":[{"FunctionInfo":{"Name":"foo", "File":"/home/machiry/projects/HandlERR/clang/tools/detecterr/utils/tests/retnull.c"},"ErrConditions":[{"File":"/home/machiry/projects/HandlERR/clang/tools/detecterr/utils/tests/retnull.c", "LineNo":3, "ColNo":3},{"File":"/home/machiry/projects/HandlERR/clang/tools/detecterr/utils/tests/retnull.c", "LineNo":5, "ColNo":5}]}
-]}
+./refverifier -dumpfinfo <source_file>
 ```
 
-## Source code organization
-The main logic is present in the folder: `clang/lib/DetectERR`.
+or 
 
-The main function is: `DetectERRASTConsumer::handleFuncDecl`, which calls various visitors in sequence.
+```
+./refverifier -dumpfinfo -p <build-path-containing compile_commands.json>
+```
 
-Each of these visitors implement a heuristic and identified error guarding conditions.
+This will create `FuncInfo.json` with all the required info. You can specify a different file name using : `--funcinfo=` option.
+
+Example:
+
+```
+./refverifier -dumpfinfo utils/tests/simple2.cpp
+```
+This will dump `FuncInfo.json` with various information. 
+
+A snippet of it is as shown below:
+
+```
+...
+{
+            "Defn": {
+                "BaseClass": "",
+                "EndLineNo": 45,
+                "FileName": "/home/machiry/projects/RefVerifier/clang/tools/refverifier/utils/tests/simple2.cpp",
+                "FuncName": "help",
+                "IsClassMethod": false,
+                "IsDefinition": true,
+                "IsStatic": true,
+                "IsVirtual": false,
+                "ParentClass": "",
+                "StartLineNo": 41
+            },
+            "ID": 2299,
+            // These are the parameters that are non-constant and non-scalar
+            // where (41, 17) is the starting line and starting column of the parameter
+            // and (42, 17) is the starting line and column of the parameter variable name.
+            //Example:
+            // static int help(class person 
+            //                 obj, int i)
+            // (41, 17)-> class person 
+            // (42, 17)-> obj
+            "NonConstNonScalarParams": [
+                [
+                    "/home/machiry/projects/RefVerifier/clang/tools/refverifier/utils/tests/simple2.cpp",
+                    41,
+                    17,
+                    42,
+                    17
+                ],
+                [
+                    "/home/machiry/projects/RefVerifier/clang/tools/refverifier/utils/tests/simple2.cpp",
+                    42,
+                    22,
+                    43,
+                    17
+                ]
+            ]
+        }
+
+...
+```
+
+## Dumping Compilation Error
+```
+./refverifier -dumperror <..source files>
+```
+This will dump `CompilationErrors.json` that contains compilation errrors organized according to functions.
+You can specify a different file name using : `--comperror=` option.
+
+Example:
+```
+./refverifier -dumperror utils/tests/simple2err.cpp
+
+{"ErrorInfo":[{"FileName":"/home/machiry/projects/RefVerifier/clang/tools/refverifier/utils/tests/simple2err.cpp", "Errs":[{"LineNo":22, "Message":"cannot assign to variable 'obj' with const-qualified type 'const class person2 &'"}]}]}
+```
