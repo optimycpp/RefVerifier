@@ -46,19 +46,6 @@ static cl::opt<bool> DumpCompilerErrors("dumperror",
                                         cl::init(false),
                                         cl::cat(RefVerifierCategory));
 
-static cl::opt<bool> ModifyFuncParam("rewritefuncparam",
-                                     cl::desc("Rewrite Function Param."),
-                                     cl::init(false),
-                                     cl::cat(RefVerifierCategory));
-
-static cl::opt<uint32_t> TargetFuncID("tfuncid",
-                                      cl::desc("ID of the function to modify."),
-                                      cl::cat(RefVerifierCategory));
-
-static cl::opt<uint32_t> TargetParamID("tparmid",
-                                      cl::desc("Parameter Number to modify"),
-                                      cl::cat(RefVerifierCategory));
-
 static cl::opt<std::string>
     OptFuncInfoJson("funcinfo",
                        cl::desc("Path to the file containing all the function "

@@ -18,7 +18,7 @@ bool FuncInfoVisitor::VisitFunctionDecl(FunctionDecl *FD) {
     auto *TypePtr = FD->getParamDecl(I)->getType().getTypePtrOrNull();
     // Check if the parameter type is interesting?
     if (isInterestingType(TypePtr)) {
-      this->Info.addNSArg(FuncID, I);
+      this->Info.addNSArg(FuncID, I, FD->getParamDecl(I));
     }
   }
   return true;

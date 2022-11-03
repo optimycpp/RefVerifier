@@ -15,8 +15,14 @@
 using namespace clang;
 using json = nlohmann::json;
 
-void ProjectInfo::addNSArg(const FuncId &FID, int NSArg) {
-  this->FuncIDNSArgs[FID].insert(NSArg);
+void ProjectInfo::addNSArg(const FuncId &FID, int NSArg,
+                           const ParmVarDecl *PVD) {
+  // std::string, unsigned int, unsigned int
+  auto PSL = PersistentSourceLoc::mkTokenPSL(PVD, PVD->getASTContext());
+  auto PLoc = std::make_tuple(PSL.getFileName(), PSL.getLineNo(),
+                              PSL.getColSNo(), PSL.getEndLineNo(),
+                              PSL.getColENo());
+  this->FuncIDNSArgs[FID].insert(PLoc);
 }
 
 void ProjectInfo::addErrorMessage(const std::string &FN,
@@ -69,7 +75,7 @@ void ProjectInfo::dumpFuncIDInfoToJson(llvm::raw_ostream &O) const {
   for (auto &NS: this->FuncIDNSArgs) {
     json FObj;
     FObj["ID"] = NS.first;
-    FObj["TargetParms"] = NS.second;
+    FObj["NonConstNonScalarParams"] = NS.second;
     if (DeclFuncId.find(NS.first) != DeclFuncId.end()) {
       FObj["Decl"] = DeclFuncId[NS.first];
     }

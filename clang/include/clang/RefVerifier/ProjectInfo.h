@@ -26,7 +26,7 @@ public:
   }
 
   // For a given function id add the index of non-scalar argument.
-  void addNSArg(const FuncId &FID, int NSArg);
+  void addNSArg(const FuncId &FID, int NSArg, const ParmVarDecl *PVD);
 
   // Write the parsed function info to json.
   void dumpFuncIDInfoToJson(llvm::raw_ostream &O) const;
@@ -40,7 +40,9 @@ public:
   void dumpErrorInfoToJson(llvm::raw_ostream &O) const;
 
 private:
-  std::map<FuncId, std::set<int>> FuncIDNSArgs;
+  std::map<FuncId,
+           std::set<std::tuple<std::string, unsigned int, unsigned int,
+                      unsigned int, unsigned int>>> FuncIDNSArgs;
   std::map<std::string,
            std::set<std::pair<unsigned int, std::string>>> ErrMessages;
 };

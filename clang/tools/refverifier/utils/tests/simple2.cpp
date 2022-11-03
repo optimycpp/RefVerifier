@@ -38,7 +38,9 @@ public:
 };
 
 
-static int help(class person obj, int i) {
+static int help(class person 
+                obj, class person 
+                obj1,int i) {
   return obj.number + 1 - i;
 }
 

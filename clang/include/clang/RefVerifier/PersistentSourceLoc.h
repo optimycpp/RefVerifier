@@ -84,6 +84,9 @@ public:
   static PersistentSourceLoc mkPSL(const Decl *D,
                                    const ASTContext &C);
 
+  static PersistentSourceLoc mkTokenPSL(const Decl *D,
+                                       const ASTContext &C);
+
   static PersistentSourceLoc mkPSL(const clang::Stmt *S,
                                    const clang::ASTContext &Context);
 
