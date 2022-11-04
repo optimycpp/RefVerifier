@@ -98,7 +98,7 @@ A snippet of it is as shown below:
             "Defn": {
                 "BaseClass": "",
                 "EndLineNo": 45,
-                "FileName": "/home/machiry/projects/RefVerifier/clang/tools/refverifier/utils/tests/simple2.cpp",
+                "FileName": "/projects/RefVerifier/clang/tools/refverifier/utils/tests/simple2.cpp",
                 "FuncName": "help",
                 "IsClassMethod": false,
                 "IsDefinition": true,
@@ -107,31 +107,39 @@ A snippet of it is as shown below:
                 "ParentClass": "",
                 "StartLineNo": 41
             },
-            "ID": 2299,
+            "ID": 2365,
             // These are the parameters that are non-constant and non-scalar
-            // where (41, 17) is the starting line and starting column of the parameter
-            // and (42, 17) is the starting line and column of the parameter variable name.
+            // This is a dictionary, which contains one entry for each parameter by its index.
+            // For every parameter, there can be multiple entries (i.e., those beloning to declaration and definition)
+            // Each entry has 5 fiels including File name and the following entries: 
+            // where (TypeIndexLine, TypeIndexColumn) is the starting line and starting column of the parameter
+            // and (ParamIndexLine, ParamIndexColumn) is the starting line and column of the parameter variable name.
             //Example:
             // static int help(class person 
             //                 obj, int i)
             // (41, 17)-> class person 
             // (42, 17)-> obj
-            "NonConstNonScalarParams": [
-                [
-                    "/home/machiry/projects/RefVerifier/clang/tools/refverifier/utils/tests/simple2.cpp",
-                    41,
-                    17,
-                    42,
-                    17
+            "NonConstNonScalarParams": {
+                "0": [
+                    {
+                        "FileName": "/projects/RefVerifier/clang/tools/refverifier/utils/tests/simple2.cpp",
+                        "ParamIndexColumn": 17,
+                        "ParamIndexLine": 42,
+                        "TypeIndexColumn": 17,
+                        "TypeIndexLine": 41
+                    }
                 ],
-                [
-                    "/home/machiry/projects/RefVerifier/clang/tools/refverifier/utils/tests/simple2.cpp",
-                    42,
-                    22,
-                    43,
-                    17
+                "1": [
+                    {
+                        "FileName": "/projects/RefVerifier/clang/tools/refverifier/utils/tests/simple2.cpp",
+                        "ParamIndexColumn": 17,
+                        "ParamIndexLine": 43,
+                        "TypeIndexColumn": 22,
+                        "TypeIndexLine": 42
+                    }
                 ]
-            ]
+            }
+
         }
 
 ...
